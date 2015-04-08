@@ -1,15 +1,54 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    10:22:09 04/08/2015 
+// Design Name: 
+// Module Name:    IntegerMultiplication 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
 module IntegerMultiplication(
 	input [31:0] A,
 	input [31:0] B,
 	output [63:0] product,
+	/*
+	output [65:0] accu,
+	output [63:0] res,
+	output [6:0] count,
+	output [32:0] bn2,
+	output [32:0] bn1,
+	output [32:0] bp1,
+	output [32:0] bp2,
+	output [32:0] adden,
+*/
 	input start,
 	input clk
 	);
 	reg [65:0] accumulator;
-	unsigned reg [5:0] count;
+	reg [6:0] cnt;
 	wire [32:0] B2n,B1n,B1,B2,addend;
-	reg [63:0] result;
-
+	wire [63:0] result;
+/*
+assign accu=accumulator,
+		res=result,
+		count =cnt,
+		bn2 = B2n,
+		bn1 = B1n,
+		bp1 = B1,
+		bp2 = B2,
+		adden = addend;
+*/
 assign 	B1n[31:0] = -B,
 		B2n[31:0] = (-B)<<1,
 		B1[31:0] = B,
@@ -23,42 +62,52 @@ initial begin
 	accumulator[65:33] <= 0;
 	accumulator[32:1] <= A;
 	accumulator[0] <=0;
-	count <= 0;
+	cnt <= 32;
 end
 
-AdderAndSubber64 adder({31'0,accumulator[65:33]},{31'0,addend},0,result,SF,CF,OF,PF,ZF);
+AdderAndSubber64 adder({31'b0,accumulator[65:33]},{31'b0,addend},1'b0,result,SF,CF,OF,PF,ZF);
 
-assign addend = 
-	case(accumulator[2:0])
-		3'000: 0;
-		3'001: B1;
-		3'010: B1;
-		3'011: B2;
-		3'100: B2n;
-		3'101: B1n;
-		3'110: B1n;
-		3'111: 0;
-;
+assign addend =	{33{~accumulator[2]&~accumulator[1]&~accumulator[0]}}&33'b0|
+						{33{~accumulator[2]&~accumulator[1]& accumulator[0]}}&B1|
+						{33{~accumulator[2]& accumulator[1]&~accumulator[0]}}&B1|
+						{33{~accumulator[2]& accumulator[1]& accumulator[0]}}&B2|
+						{33{ accumulator[2]&~accumulator[1]&~accumulator[0]}}&B2n|
+						{33{ accumulator[2]&~accumulator[1]& accumulator[0]}}&B1n|
+						{33{ accumulator[2]& accumulator[1]&~accumulator[0]}}&B1n|
+						{33{ accumulator[2]& accumulator[1]& accumulator[0]}}&33'b0
+						;
+//	case(accumulator[2:0])
+//		3'b000: 0;
+//		3'b001: B1;
+//		3'b010: B1;
+//		3'b011: B2;
+//		3'b100: B2n;
+//		3'b101: B1n;
+//		3'b110: B1n;
+//		3'b111: 0;
+//	endcase
 
 always @(posedge clk) begin
-	if (count < 32) begin //accmulating
-		if(count[0]) begin
-			accumulator[65:33] <= result[32:0];
+	if (cnt < 32) begin //accmulating
+		if(cnt[0]) begin
+			accumulator[63:0] <= accumulator>>>2;
+			accumulator[64] <= accumulator[65];
+			accumulator[65] <= accumulator[65];
 		end
 		else begin
-			accumulator <= accumulator>>>2;
+			accumulator[65:33] <= result[32:0];
 		end
-		count <= count + 1;
+		cnt <= cnt + 1;
 	end
-	else if ( count == 32 && start) begin //initial
+	else if ( cnt == 32 && start) begin //initial
 		accumulator[65:33] <= 0;
 		accumulator[32:1] <= A;
 		accumulator[0] <=0;
-		count <= 0;
+		cnt <= 0;
 	end
 	else begin
 		accumulator <= accumulator;
-		count <= 32;
+		cnt <= 6'd32;
 	end
 end
 
