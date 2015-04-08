@@ -28,6 +28,7 @@ module IntegerMultiplication(
 	
 	reg [65:0] accumulator;
 	reg [6:0] cnt;
+	reg oldStart;
 	wire [32:0] B2n,B1n,B1,B2,addend;
 	wire [63:0] result;
 	
@@ -71,7 +72,7 @@ always @(posedge clk) begin
 		end
 		cnt <= cnt + 1;
 	end
-	else if ( cnt == 32 && start) begin //initial
+	else if ( cnt == 32 && (start != old Start) ) begin //initial
 		accumulator[65:33] <= 0;
 		accumulator[32:1] <= A;
 		accumulator[0] <=0;
@@ -81,6 +82,7 @@ always @(posedge clk) begin
 		accumulator <= accumulator;
 		cnt <= 6'd32;
 	end
+	oldStart <= start;
 end
 
 assign product = accumulator[64:1];
