@@ -1,0 +1,72 @@
+module floatadder(input wire[63:0] op1,input wire[63:0]op2,output wire[63:0]res );
+	reg [63:0] m1;
+	reg [63:0] m2;
+	reg [63:0] m;
+	reg flag;
+	reg [7:0] s1;
+	reg [7:0] s2;
+	reg [7:0] s;
+always @*begin
+		s1 <= op1[30:23];
+		s2 <= op1[30:23];
+		m1 <={40'b0,1'b1,op1[22:0]};
+		m2 <={40'b0,1'b1,op2[22:0]};
+	
+  if(s1>s2||(s1==s2)&(m1>m2))
+	begin
+		m2 <= m2>>(s1-s2);
+		flag<= op1[31];
+		s<=s1;
+		case(op1[31]^op2[31])
+			1'b0:begin
+				m<=m1+m2;
+			end
+			1'b1:begin
+				m<=m1-m2;
+			end
+		endcase
+	end
+
+	else  begin
+		m1<=m1>>(s2-s1);
+		flag<= op2[31];
+		s<=s2;
+		case(op1[31]^op2[31])
+			1'b0:begin
+				m<=m1+m2;
+			end
+			1'b1:begin
+				m<=m2-m1;
+			end
+		endcase
+	end
+	if(m==0)begin 
+		flag<=0;
+		s<=0;
+	end
+	
+	else begin
+	while(m[31:24]|8'b00000000)begin
+			m<=m>>1;
+			s<=s+1;
+	end
+	while(~m[23]) begin
+		   m<=m<<1;
+			s<=s-1;
+	end
+	
+	if(op1==0)begin
+			m<=op2[22:0];
+			flag<=op2[31];
+			s<=op2[30:23];
+	 end
+	 if(op2==0)begin
+			m<=op1[22:0];
+			flag<=op1[31];
+			s<=op1[30:23];
+	 end
+	end
+end
+
+assign res={32'b0,flag,s,m[22:0]};
+endmodule
