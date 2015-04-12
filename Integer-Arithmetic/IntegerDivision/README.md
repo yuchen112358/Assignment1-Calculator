@@ -1,12 +1,19 @@
 除法器：
 
 module IntegerDivision(
+
 	input [63:0] Dividend,  //被除数
+	
 	input [31:0] Divisor,   //除数
+	
 	output[63:0] quotient,  //商
+	
 	output[31:0] remainder, //余数
+	
 	input start,    //开始信号
+	
 	input clk       //时钟信号
+	
 	);
 
 所有的输入输出都视为无符号数，
