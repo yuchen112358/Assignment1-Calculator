@@ -1,0 +1,13 @@
+module floatsub (input wire[63:0] op1,input wire[63:0]op2,output wire[63:0]res );
+
+	reg[63:0] subop;
+	always @*begin
+		if(op2==0)begin
+			subop<=op2;
+end
+else   begin
+    subop<=op2;
+	subop[31] <= ~op2[31];		
+end
+floatadder (op1,subop,res);
+endmodule
