@@ -1,6 +1,6 @@
 除法器：
 
-module IntegerDivision(
+IntegerDivision(
 
 	input [63:0] Dividend,  //被除数
 	
